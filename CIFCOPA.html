@@ -3,317 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planejador de Carga - Completo</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #2c3e50; }
-        
-        /* Controles */
-        .controles { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; background: #eef2f5; padding: 15px; border-radius: 8px; }
-        .input-group { display: flex; flex-direction: column; align-items: center; }
-        label { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
-        input { width: 80px; padding: 8px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
-        button { background-color: #1f77b4; color: white; border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 15px; width: 100%; transition: background 0.3s;}
-        button:hover { background-color: #155a8a; }
-
-        /* Alertas */
-        #resumo { text-align: center; font-size: 16px; margin-bottom: 20px; padding: 15px; border-radius: 4px; display: none; font-weight: bold; }
-        .alerta-ok { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alerta-erro { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-
-        /* Grids Gerais */
-        .secao { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px dashed #eee; }
-        h3 { text-align: center; color: #555; margin-bottom: 10px; }
-        .carroceria-wrapper { overflow-x: auto; padding-bottom: 10px; }
-        
-        .grid-22 { display: grid; grid-template-columns: repeat(22, minmax(40px, 1fr)); gap: 4px; margin-top: 10px; }
-        .grid-6 { display: grid; grid-template-columns: repeat(6, minmax(60px, 1fr)); gap: 4px; margin-top: 10px; max-width: 450px; margin-left: auto; margin-right: auto; }
-        
-        .celula { height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; border-radius: 4px; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
-        .celula-acumulado { text-align: center; font-weight: bold; color: #1f77b4; font-size: 14px; padding-top: 8px; border-top: 2px dashed #ccc; }
-
-        /* Cores */
-        .bg-P13 { background-color: #1f77b4; color: white; }
-        .bg-P45 { background-color: #d62728; color: white; }
-        .bg-P20 { background-color: #ff7f0e; color: black; text-shadow: none; }
-        .bg-P8  { background-color: #bcbd22; color: black; text-shadow: none; }
-        .bg-P5  { background-color: #9467bd; color: white; }
-        .bg-vazio { background-color: #f9f9f9; border: 1px dashed #ccc; }
-
-        /* Gráfico de Peso */
-        .grid-peso { display: grid; grid-template-columns: repeat(22, minmax(40px, 1fr)); gap: 4px; height: 120px; align-items: end; margin-top: 20px; }
-        .barra-container { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; width: 100%; }
-        .barra-peso { width: 100%; background-color: #555; border-radius: 3px 3px 0 0; }
-        .label-peso { font-size: 10px; font-weight: bold; margin-bottom: 4px; color: #333; }
-
-        /* Legenda */
-        .legenda { display: flex; justify-content: center; gap: 15px; margin-top: 10px; padding: 20px; background: #fff; position: sticky; bottom: 0; border-top: 1px solid #ddd; }
-        .item-legenda { display: flex; align-items: center; gap: 5px; font-weight: bold; font-size: 14px;}
-        .cor-box { width: 20px; height: 20px; border-radius: 3px; }
-    </style>
+    <title>Planeador de Carga - QRF Inteligente</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
-    <h1>🚛 Planejador de Carga e Balanceamento</h1>
+    <h1>🚛 Planeador de Carga e Frota</h1>
 
-    <div class="controles">
-        <div class="input-group"><label>P13</label><input type="number" id="qtd_p13" value="0" min="0"></div>
-        <div class="input-group"><label>P45</label><input type="number" id="qtd_p45" value="0" min="0"></div>
-        <div class="input-group"><label>P20</label><input type="number" id="qtd_p20" value="0" min="0"></div>
-        <div class="input-group"><label>P8</label><input type="number" id="qtd_p8" value="0" min="0"></div>
-        <div class="input-group"><label>P5</label><input type="number" id="qtd_p5" value="0" min="0"></div>
-        <button onclick="gerarMapa()">Calcular e Gerar Mapas</button>
-    </div>
-
-    <div id="resumo"></div>
-
-    <div class="secao">
-        <h3>1. VISTA SUPERIOR (MAPA DE DOCA)</h3>
-        <div style="display: flex; justify-content: space-between; font-weight: bold; color: #777; margin-bottom: 5px;">
-            <span>⬅️ CABINE (Início)</span>
-            <span>PORTAS (Fundo) ➡️</span>
+    <div class="painel-frota" id="painel-frota">
+        <h3>Identificação do Camião</h3>
+        <p>Digite as 3 primeiras letras da matrícula:</p>
+        <div class="linha-input">
+            <input type="text" id="placa_busca" class="input-placa" maxlength="3" placeholder="QRF">
+            <button class="btn-acao" onclick="buscarCaminhao()">Confirmar Matrícula</button>
         </div>
-        <div class="carroceria-wrapper">
-            <div class="grid-22" id="grid_mapa"></div>
-            <div class="grid-22" id="grid_acumulado" style="margin-top: 10px;"></div>
-            <div style="text-align: center; color: #1f77b4; font-weight: bold; margin-top: 5px; font-size: 12px;">SOMA ACUMULADA FÍSICA PARA CONFERÊNCIA</div>
-        </div>
-    </div>
+        
+        <div id="msg-frota" class="mensagem-erro"></div>
 
-    <div class="secao">
-        <h3>2. VISTA LATERAL ESQUERDA (Altura)</h3>
-        <div class="carroceria-wrapper">
-            <div class="grid-22" id="grid_lat_esq"></div>
-        </div>
-    </div>
-
-    <div class="secao">
-        <h3>3. VISTA LATERAL DIREITA (Altura)</h3>
-        <div class="carroceria-wrapper">
-            <div class="grid-22" id="grid_lat_dir"></div>
+        <div id="form-cadastro">
+            <h3 style="color: #1f77b4;">Cadastrar Novo Camião</h3>
+            <div class="grid-cadastro">
+                <div>
+                    <label>Matrícula</label>
+                    <input type="text" id="cad_placa" class="input-placa" maxlength="3" disabled>
+                </div>
+                <div>
+                    <label>Carga Máx. (P13)</label>
+                    <input type="number" id="cad_limite" placeholder="Ex: 477">
+                </div>
+                <div>
+                    <label>Comprimento</label>
+                    <input type="number" id="cad_cols" placeholder="22">
+                </div>
+                <div>
+                    <label>Largura</label>
+                    <input type="number" id="cad_rows" placeholder="6">
+                </div>
+            </div>
+            <button class="btn-acao btn-secundario" onclick="salvarCaminhao()">Salvar na Frota</button>
+            <button class="btn-acao btn-cancelar" onclick="fecharCadastro()">Cancelar</button>
         </div>
     </div>
 
-    <div class="secao">
-        <h3 style="color: #d62728;">4. VISTA DA ENTRADA (Olhando a traseira com as portas abertas)</h3>
-        <div style="display: flex; justify-content: space-between; max-width: 450px; margin: 0 auto; font-weight: bold; color: #555; font-size: 12px;">
-            <span>LADO ESQUERDO</span>
-            <span>LADO DIREITO</span>
+    <div id="area-calculo" style="display: none;">
+        <div class="header-ativo">
+            <h2 id="titulo-caminhao-ativo"></h2>
+            <button class="link-trocar" onclick="trocarCaminhao()">Trocar Camião</button>
         </div>
-        <div class="carroceria-wrapper">
-            <div class="grid-6" id="grid_traseira"></div>
-        </div>
-    </div>
 
-    <div class="secao" style="border-bottom: none;">
-        <h3>5. DISTRIBUIÇÃO DE PESO BRUTO POR COLUNA (kg)</h3>
-        <div class="carroceria-wrapper">
-            <div class="grid-peso" id="grid_peso"></div>
-        </div>
-    </div>
+        <div class="controles">
+            <div class="input-group border-green">
+                <label class="label-liq">P13 Liquigás</label>
+                <input type="number" id="qtd_p13_liq" value="0" min="0">
+            </div>
+            <div class="input-group border-blue">
+                <label class="label-cop">P13 Copagaz</label>
+                <input type="number" id="qtd_p13_cop" value="0" min="0">
+            </div>
+            <div class="input-group"><label>P45</label><input type="number" id="qtd_p45" value="0" min="0"></div>
+            <div class="input-group"><label>P20</label><input type="number" id="qtd_p20" value="0" min="0"></div>
+            <div class="input-group"><label>P8</label><input type="number" id="qtd_p8" value="0" min="0"></div>
+            <div class="input-group"><label>P5</label><input type="number" id="qtd_p5" value="0" min="0"></div>
+            
+            <div class="ordem-descarga">
+                <label>🚚 Qual marca descarrega <b>PRIMEIRO</b>? (Fica nas portas)</label>
+                <div class="radio-group">
+                    <label class="label-liq"><input type="radio" name="desc_primeiro" value="L" checked> Liquigás</label>
+                    <label class="label-cop"><input type="radio" name="desc_primeiro" value="C"> Copagaz</label>
+                </div>
+            </div>
 
-    <div class="legenda">
-        <div class="item-legenda"><div class="cor-box bg-P13"></div> P13</div>
-        <div class="item-legenda"><div class="cor-box bg-P45"></div> P45</div>
-        <div class="item-legenda"><div class="cor-box bg-P20"></div> P20</div>
-        <div class="item-legenda"><div class="cor-box bg-P8"></div> P8</div>
-        <div class="item-legenda"><div class="cor-box bg-P5"></div> P5</div>
+            <div class="botoes-container">
+                <button class="btn-acao flex-2" onclick="gerarMapa()">Calcular e Gerar Mapas</button>
+                <button class="btn-acao btn-secundario flex-1" onclick="window.print()">🖨️ Imprimir / PDF</button>
+            </div>
+        </div>
+
+        <div id="resumo"></div>
+
+        <div class="secao" id="secao_superior" style="display: none;">
+            <h3>1. VISTA SUPERIOR (MAPA DE DOCA)</h3>
+            <div class="fluxo-indicador"><span>⬅️ CABINE</span><span>PORTAS ➡️</span></div>
+            <div class="carroceria-wrapper">
+                <div class="grid-dinamico" id="grid_mapa"></div>
+                <div class="grid-dinamico" id="grid_acumulado"></div>
+                <div class="conferencia-txt">SOMA ACUMULADA FÍSICA</div>
+            </div>
+        </div>
+
+        <div class="secao" id="secao_esq" style="display: none;">
+            <h3>2. VISTA LATERAL ESQUERDA</h3>
+            <div class="carroceria-wrapper"><div class="grid-dinamico" id="grid_lat_esq"></div></div>
+        </div>
+
+        <div class="secao" id="secao_dir" style="display: none;">
+            <h3>3. VISTA LATERAL DIREITA</h3>
+            <div class="carroceria-wrapper"><div class="grid-dinamico" id="grid_lat_dir"></div></div>
+        </div>
+
+        <div class="secao" id="secao_tras" style="display: none;">
+            <h3>4. VISTA DA ENTRADA (PORTAS)</h3>
+            <div class="carroceria-wrapper"><div class="grid-centralizado" id="grid_traseira"></div></div>
+        </div>
+
+        <div class="secao" id="secao_peso" style="display: none;">
+            <h3>5. DISTRIBUIÇÃO DE PESO BRUTO (kg)</h3>
+            <div class="carroceria-wrapper"><div class="grid-peso" id="grid_peso"></div></div>
+        </div>
+
+        <div class="legenda">
+            <div class="item-legenda"><div class="cor-box bg-P13L"></div> Liquigás</div>
+            <div class="item-legenda"><div class="cor-box bg-P13C"></div> Copagaz</div>
+            <div class="item-legenda"><div class="cor-box bg-P45"></div> P45</div>
+            <div class="item-legenda"><div class="cor-box bg-P20"></div> P20</div>
+            <div class="item-legenda"><div class="cor-box bg-P8"></div> P8</div>
+            <div class="item-legenda"><div class="cor-box bg-P5"></div> P5</div>
+        </div>
     </div>
 </div>
 
-<script>
-    const peso_liquido_p13 = 13;
-    const peso_bruto = { 'P13': 28, 'P45': 80, 'P20': 41, 'P8': 18, 'P5': 12 };
-    const fator_conversao = { 'P13': 1.0, 'P45': 3.0, 'P20': 2.0, 'P8': 0.8524, 'P5': 0.6723 };
-    const LIMITE_LIQUIDO = 6201;
-    const cols = 22;
-    const rows = 6;
-    const max_altura = 4;
-
-    function gerarMapa() {
-        // 1. Inputs e Cálculos
-        let p13 = parseInt(document.getElementById('qtd_p13').value) || 0;
-        let p45 = parseInt(document.getElementById('qtd_p45').value) || 0;
-        let p20 = parseInt(document.getElementById('qtd_p20').value) || 0;
-        let p8  = parseInt(document.getElementById('qtd_p8').value) || 0;
-        let p5  = parseInt(document.getElementById('qtd_p5').value) || 0;
-
-        let eq_exato = (p13 * fator_conversao.P13) + (p45 * fator_conversao.P45) + (p20 * fator_conversao.P20) + (p8 * fator_conversao.P8) + (p5 * fator_conversao.P5);
-        let eq_arredondado = Math.ceil(eq_exato);
-        let carga_liquida = eq_arredondado * peso_liquido_p13;
-
-        let resumoDiv = document.getElementById('resumo');
-        resumoDiv.style.display = 'block';
-        if (carga_liquida > LIMITE_LIQUIDO) {
-            let excesso = (carga_liquida - LIMITE_LIQUIDO).toFixed(2);
-            resumoDiv.className = 'alerta-erro';
-            resumoDiv.innerHTML = `⚠️ ALERTA DE EXCESSO! Passou ${excesso} kg.<br>Carga Líquida Total: ${carga_liquida.toFixed(2)} kg | Eqv: ${eq_arredondado} P13`;
-        } else {
-            resumoDiv.className = 'alerta-ok';
-            resumoDiv.innerHTML = `✅ Peso Liberado.<br>Carga Líquida Total: ${carga_liquida.toFixed(2)} kg | Eqv: ${eq_arredondado} P13 (Limite: ${LIMITE_LIQUIDO} kg)`;
-        }
-
-        // 2. Lógica de Distribuição (A matriz 3D)
-        let grid = Array.from({length: rows}, () => Array.from({length: cols}, () => []));
-        let p13_left = p13, p45_left = p45, p20_left = p20, p8_left = p8, p5_left = p5;
-
-        for (let c = 0; c < cols; c++) {
-            for (let r = 0; r < rows; r++) {
-                let max_h = (c < 3 || c >= cols - 3) ? 3 : 4;
-                
-                if (p13_left > 0) {
-                    let take_p13 = Math.min(p13_left, max_h);
-                    let space_left = max_h - take_p13;
-                    if (space_left > 0 && p8_left > 0) {
-                        let take_p8 = Math.min(p8_left, space_left);
-                        for(let i=0; i<take_p13; i++) grid[r][c].push('P13');
-                        for(let i=0; i<take_p8; i++) grid[r][c].push('P8');
-                        p13_left -= take_p13; p8_left -= take_p8;
-                    } else if (space_left > 0 && p5_left > 0) {
-                        let take_p5 = Math.min(p5_left, space_left);
-                        for(let i=0; i<take_p13; i++) grid[r][c].push('P13');
-                        for(let i=0; i<take_p5; i++) grid[r][c].push('P5');
-                        p13_left -= take_p13; p5_left -= take_p5;
-                    } else {
-                        for(let i=0; i<take_p13; i++) grid[r][c].push('P13');
-                        p13_left -= take_p13;
-                    }
-                    continue;
-                }
-                if (p8_left > 0) {
-                    let take = Math.min(p8_left, max_h);
-                    for(let i=0; i<take; i++) grid[r][c].push('P8');
-                    p8_left -= take; continue;
-                }
-                if (p5_left > 0) {
-                    let take = Math.min(p5_left, max_h);
-                    for(let i=0; i<take; i++) grid[r][c].push('P5');
-                    p5_left -= take; continue;
-                }
-                if (p45_left > 0) {
-                    grid[r][c].push('P45');
-                    p45_left -= 1; continue;
-                }
-                if (p20_left > 0) {
-                    grid[r][c].push('P20');
-                    p20_left -= 1; continue;
-                }
-            }
-        }
-
-        // Função auxiliar para renderizar células vazias ou cheias
-        function criarCelula(item, texto) {
-            let div = document.createElement('div');
-            div.classList.add('celula');
-            if (!item) {
-                div.classList.add('bg-vazio');
-            } else {
-                div.classList.add('bg-' + item);
-                div.innerText = texto || item;
-            }
-            return div;
-        }
-
-        // --- 1. VISTA SUPERIOR ---
-        const gridMapa = document.getElementById('grid_mapa');
-        gridMapa.innerHTML = ''; 
-        for (let r = rows - 1; r >= 0; r--) {
-            for (let c = 0; c < cols; c++) {
-                let pilha = grid[r][c];
-                if (pilha.length === 0) {
-                    gridMapa.appendChild(criarCelula(null));
-                } else {
-                    let top_item = pilha[pilha.length - 1];
-                    let texto = pilha.length;
-                    if ((top_item === 'P8' || top_item === 'P5') && pilha.includes('P13')) {
-                        texto = `${pilha.filter(x => x === 'P13').length}+${pilha.filter(x => x === top_item).length}`;
-                    }
-                    gridMapa.appendChild(criarCelula(top_item, texto));
-                }
-            }
-        }
-
-        // Soma Acumulada
-        const gridAcumulado = document.getElementById('grid_acumulado');
-        gridAcumulado.innerHTML = '';
-        let contagemAcumulada = 0;
-        let pesosColunas = [];
-
-        for (let c = 0; c < cols; c++) {
-            let botijoes_na_coluna = 0;
-            let peso_na_coluna = 0;
-            for (let r = 0; r < rows; r++) {
-                botijoes_na_coluna += grid[r][c].length;
-                grid[r][c].forEach(b => peso_na_coluna += peso_bruto[b]);
-            }
-            contagemAcumulada += botijoes_na_coluna;
-            pesosColunas.push(peso_na_coluna);
-            
-            let divNum = document.createElement('div');
-            divNum.classList.add('celula-acumulado');
-            divNum.innerText = contagemAcumulada > 0 ? contagemAcumulada : '-';
-            gridAcumulado.appendChild(divNum);
-        }
-
-        // --- 2. VISTA LATERAL ESQUERDA (Linha r = 5) ---
-        const gridLatEsq = document.getElementById('grid_lat_esq');
-        gridLatEsq.innerHTML = '';
-        for (let h = max_altura - 1; h >= 0; h--) {
-            for (let c = 0; c < cols; c++) {
-                let item = grid[rows - 1][c][h];
-                gridLatEsq.appendChild(criarCelula(item));
-            }
-        }
-
-        // --- 3. VISTA LATERAL DIREITA (Linha r = 0) ---
-        const gridLatDir = document.getElementById('grid_lat_dir');
-        gridLatDir.innerHTML = '';
-        for (let h = max_altura - 1; h >= 0; h--) {
-            for (let c = 0; c < cols; c++) {
-                let item = grid[0][c][h];
-                gridLatDir.appendChild(criarCelula(item));
-            }
-        }
-
-        // --- 4. VISTA DA ENTRADA (Coluna c = 21, última) ---
-        const gridTraseira = document.getElementById('grid_traseira');
-        gridTraseira.innerHTML = '';
-        for (let h = max_altura - 1; h >= 0; h--) {
-            // Da esquerda para a direita na visão de quem está atrás (r=5 até r=0)
-            for (let r = rows - 1; r >= 0; r--) {
-                let item = grid[r][cols - 1][h];
-                gridTraseira.appendChild(criarCelula(item));
-            }
-        }
-
-        // --- 5. GRÁFICO DE PESO ---
-        const gridPeso = document.getElementById('grid_peso');
-        gridPeso.innerHTML = '';
-        let maxPeso = Math.max(...pesosColunas, 1);
-
-        pesosColunas.forEach(peso => {
-            let container = document.createElement('div');
-            container.className = 'barra-container';
-            
-            let label = document.createElement('div');
-            label.className = 'label-peso';
-            label.innerText = peso > 0 ? peso + 'kg' : '';
-            
-            let bar = document.createElement('div');
-            bar.className = 'barra-peso';
-            let percentual = (peso / maxPeso) * 100;
-            bar.style.height = percentual + '%';
-
-            container.appendChild(label);
-            container.appendChild(bar);
-            gridPeso.appendChild(container);
-        });
-    }
-
-    window.onload = gerarMapa;
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>
