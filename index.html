@@ -69,11 +69,11 @@
 <body>
 
 <div class="container">
-    <h1>🚛 Gestor de Carga Multimarcas</h1>
+    <h1>🚛 Gestor de Carregamento</h1>
 
     <div class="painel-frota" id="painel-frota">
-        <h3>Identificar Camião</h3>
-        <p>Introduza os 3 caracteres da matrícula (ex: QRF):</p>
+        <h3>Identificar Caminhão</h3>
+        <p>Introduza os 3 primeiros caracteres da placa :</p>
         <input type="text" id="placa_busca" class="input-placa" maxlength="3">
         <button class="btn-acao" onclick="buscarCaminhao()">Entrar</button>
         <div id="msg-frota" style="color:red; margin-top:10px;"></div>
@@ -100,7 +100,7 @@
             <div class="input-group"><label>P5</label><input type="number" id="qtd_p5" value="0"></div>
             
             <div class="ordem-descarga">
-                <label>🏁 Qual marca sai <b>PRIMEIRO</b> do camião?</label>
+                <label>🏁 Qual marca sai <b>PRIMEIRO</b> do caminhão?</label>
                 <div class="radio-group">
                     <label><input type="radio" name="prio" value="L" checked> Liquigás (Fundo)</label>
                     <label><input type="radio" name="prio" value="C"> Copagaz (Fundo)</label>
