@@ -1,90 +1,93 @@
-// Configuração da Frota
-const frota = { 
-    "QRF": { cols: 22, rows: 6, max_p13: 477 } 
+// Dados Técnicos
+const PESO_BRUTO = { 'P13L': 28, 'P13C': 28, 'P45': 80, 'P20': 41, 'P8': 18, 'P5': 12 };
+let camiao = null;
+
+// Frota Configurada
+const frota = {
+    "QRF": { cols: 22, rows: 6, max_p13: 477, limite_kg: 6201 }
 };
 
-let camiaoAtivo = null;
-
-// 1. Função para encontrar o camião
 function buscarCaminhao() {
-    const input = document.getElementById('placa_busca').value.toUpperCase();
+    const placa = document.getElementById('placa_busca').value.toUpperCase();
     
-    if (frota[input]) {
-        camiaoAtivo = frota[input];
+    if (frota[placa]) {
+        camiao = frota[placa];
         document.getElementById('painel-frota').style.display = 'none';
         document.getElementById('area-calculo').style.display = 'block';
-        // Preenche com o limite padrão de P13
-        document.getElementById('qtd_p13_liq').value = camiaoAtivo.max_p13;
+        document.getElementById('titulo-ativo').innerText = `Camião: ${placa} (${camiao.cols}x${camiao.rows})`;
+        document.getElementById('qtd_p13_liq').value = camiao.max_p13;
         document.getElementById('msg-erro').style.display = 'none';
     } else {
         document.getElementById('msg-erro').style.display = 'block';
     }
 }
 
-// 2. Função Principal de Geração do Mapa
 function gerarMapa() {
-    if (!camiaoAtivo) return;
+    if (!camiao) return;
 
-    // Captura valores dos inputs
-    const qLiq = parseInt(document.getElementById('qtd_p13_liq').value) || 0;
-    const qCop = parseInt(document.getElementById('qtd_p13_cop').value) || 0;
-    const qP45 = parseInt(document.getElementById('qtd_p45').value) || 0;
+    // Captura Quantidades
+    const q = {
+        liq: parseInt(document.getElementById('qtd_p13_liq').value) || 0,
+        cop: parseInt(document.getElementById('qtd_p13_cop').value) || 0,
+        p45: parseInt(document.getElementById('qtd_p45').value) || 0,
+        p20: parseInt(document.getElementById('qtd_p20').value) || 0,
+        p8: parseInt(document.getElementById('qtd_p8').value) || 0,
+        p5: parseInt(document.getElementById('qtd_p5').value) || 0
+    };
+
     const prio = document.querySelector('input[name="prio"]:checked').value;
+    const gridDiv = document.getElementById('grid_mapa');
+    gridDiv.style.gridTemplateColumns = `repeat(${camiao.cols}, 1fr)`;
+    gridDiv.innerHTML = '';
 
-    const gridMapa = document.getElementById('grid_mapa');
-    gridMapa.style.gridTemplateColumns = `repeat(${camiaoAtivo.cols}, 1fr)`;
-    gridMapa.innerHTML = '';
+    // Lógica de Prioridade:
+    // Se Liquigás sai primeiro, ela fica no fim (portas). 
+    // Logo, preenchemos Copagaz primeiro na frente (cabine).
+    let ordemP13 = (prio === 'L') ? ['P13C', 'P13L'] : ['P13L', 'P13C'];
+    let stock = { 'P13L': q.liq, 'P13C': q.cop, 'P45': q.p45, 'P20': q.p20, 'P8': q.p8, 'P5': q.p5 };
 
-    // Definição de estoques para distribuir
-    let estoque = { 'P13L': qLiq, 'P13C': qCop, 'P45': qP45 };
-    
-    // LOGICA DE PRIORIDADE:
-    // Se Liquigás (L) descarrega primeiro, ela vai para as portas (final do caminhão).
-    // Então, preenchemos a Copagaz primeiro na cabine.
-    let ordemMarcas = (prio === 'L') ? ['P13C', 'P13L'] : ['P13L', 'P13C'];
+    let total_peso = 0;
 
-    // Percorre o caminhão (da Cabine para as Portas)
-    // r = fileiras (largura), c = colunas (comprimento)
-    for (let r = camiaoAtivo.rows - 1; r >= 0; r--) {
-        for (let c = 0; c < camiaoAtivo.cols; c++) {
-            let div = document.createElement('div');
-            let hMax = (c < 3 || c >= camiaoAtivo.cols - 3) ? 3 : 4; // Altura máxima por coluna
+    // Gerar o Grid (Linha por linha, de trás para a frente do array para visualização)
+    for (let r = camiao.rows - 1; r >= 0; r--) {
+        for (let c = 0; c < camiao.cols; c++) {
             let pilha = [];
+            let hMax = (c < 3 || c >= camiao.cols - 3) ? 3 : 4;
 
-            // Preenche a pilha de cada posição
-            while(pilha.length < hMax) {
-                if (estoque[ordemMarcas[0]] > 0) {
-                    pilha.push(ordemMarcas[0]);
-                    estoque[ordemMarcas[0]]--;
-                } else if (estoque[ordemMarcas[1]] > 0) {
-                    pilha.push(ordemMarcas[1]);
-                    estoque[ordemMarcas[1]]--;
-                } else if (estoque['P45'] > 0 && pilha.length === 0) {
-                    pilha.push('P45');
-                    estoque['P45']--;
-                    break; // P45 ocupa o espaço todo da altura
-                } else {
-                    break; // Sem mais carga
-                }
+            // 1. Tentar P45 ou P20 primeiro (base)
+            if (stock['P45'] > 0) { pilha.push('P45'); stock['P45']--; }
+            else if (stock['P20'] > 0) { pilha.push('P20'); stock['P20']--; }
+            
+            // 2. Preencher com P13 conforme a prioridade
+            while (pilha.length < hMax) {
+                if (stock[ordemP13[0]] > 0) { pilha.push(ordemP13[0]); stock[ordemP13[0]]--; }
+                else if (stock[ordemP13[1]] > 0) { pilha.push(ordemP13[1]); stock[ordemP13[1]]--; }
+                else break;
             }
 
-            // Estiliza a célula do mapa baseada no que está no topo
-            let topo = pilha[pilha.length - 1];
-            if (topo) {
-                div.className = `celula bg-${topo}`;
-                div.innerText = pilha.length;
-            } else {
-                div.className = 'celula bg-vazio';
-                div.innerText = '';
+            // 3. Sobrou espaço? Colocar P8 ou P5 no topo
+            while (pilha.length < hMax) {
+                if (stock['P8'] > 0) { pilha.push('P8'); stock['P8']--; }
+                else if (stock['P5'] > 0) { pilha.push('P5'); stock['P5']--; }
+                else break;
             }
-            gridMapa.appendChild(div);
+
+            // Criar Elemento Visual
+            const cell = document.createElement('div');
+            const topo = pilha[pilha.length - 1];
+            cell.className = `celula ${topo ? 'bg-' + topo : 'bg-vazio'}`;
+            cell.innerText = pilha.length || '';
+            gridDiv.appendChild(cell);
+
+            // Somar Peso
+            pilha.forEach(item => total_peso += PESO_BRUTO[item]);
         }
     }
 
-    // Resumo de sucesso
+    // Exibir Resumo
     const resumo = document.getElementById('resumo');
     resumo.style.display = 'block';
-    resumo.style.background = '#d4edda';
-    resumo.style.color = '#155724';
-    resumo.innerText = "✅ Mapa gerado! Verifique a arrumação abaixo.";
+    const pesoOk = total_peso <= (camiao.max_p13 * 28); // Exemplo de limite
+    resumo.style.backgroundColor = pesoOk ? '#d4edda' : '#f8d7da';
+    resumo.innerHTML = `Peso Total Estimado: ${total_peso} kg ${pesoOk ? '✅' : '⚠️ OVERLOAD'}`;
 }
