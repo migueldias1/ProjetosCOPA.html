@@ -73,23 +73,23 @@
 <body>
 
 <div class="container">
-    <h1>🚛 Planeador de Carga e Frota</h1>
+    <h1>🚛 Planeador de carregamento</h1>
 
     <div class="painel-frota" id="painel-frota">
-        <h3>Identificação do Camião</h3>
-        <p>Digite as 3 primeiras letras da matrícula:</p>
+        <h3>Identificação do Camnhião</h3>
+        <p>Digite as 3 primeiras letras da placa:</p>
         <div class="linha-input">
-            <input type="text" id="placa_busca" class="input-placa" maxlength="3" placeholder="QRF">
-            <button class="btn-acao" onclick="buscarCaminhao()">Confirmar Matrícula</button>
+            <input type="text" id="placa_busca" class="input-placa" maxlength="3" placeholder="">
+            <button class="btn-acao" onclick="buscarCaminhao()">Confirmar Placa</button>
         </div>
         
         <div id="msg-frota" style="margin-top: 15px; font-weight: bold; color: #d62728;"></div>
 
         <div id="form-cadastro">
-            <h3 style="color: #1f77b4;">Cadastrar Novo Camião</h3>
+            <h3 style="color: #1f77b4;">Cadastrar Novo Caminhão</h3>
             <div class="grid-cadastro">
                 <div>
-                    <label>Matrícula (3 letras)</label>
+                    <label>Placa (3 letras)</label>
                     <input type="text" id="cad_placa" class="input-placa" maxlength="3" disabled>
                 </div>
                 <div>
