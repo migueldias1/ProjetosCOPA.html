@@ -3,122 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planeador de Carga - QRF Inteligente</title>
-    <link rel="stylesheet" href="style.css">
+    <title>QRF - Planeador Multimarcas</title>
+    <style>
+        /* CONFIGURAÇÕES GERAIS */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #1a3a5a; margin-bottom: 25px; }
+        h3 { border-left: 5px solid #1f77b4; padding-left: 10px; color: #444; margin-top: 30px; }
+
+        /* IDENTIFICAÇÃO DO CAMIÃO */
+        .painel-frota { background: #e3e9ef; padding: 25px; border-radius: 10px; text-align: center; border: 1px solid #cfd9e1; }
+        .input-placa { font-size: 24px; text-transform: uppercase; font-weight: bold; width: 100px; text-align: center; border: 2px solid #1f77b4; border-radius: 6px; padding: 5px; }
+        
+        /* BOTÕES */
+        .btn-acao { background-color: #1f77b4; color: white; border: none; padding: 12px 24px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .btn-acao:hover { background-color: #155a8a; transform: translateY(-1px); }
+        .btn-secundario { background-color: #6c757d; }
+        .btn-cancelar { background-color: #dc3545; }
+
+        /* CONTROLES DE CARGA */
+        .controles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; background: #fff; padding: 20px; border: 1px solid #ddd; border-radius: 10px; margin-top: 20px; }
+        .input-group { display: flex; flex-direction: column; align-items: center; }
+        .input-group label { font-size: 13px; font-weight: bold; margin-bottom: 5px; }
+        .input-group input { width: 80px; padding: 10px; text-align: center; border: 1px solid #ccc; border-radius: 6px; font-size: 18px; }
+        
+        /* DESTAQUE MARCAS */
+        .group-liq { border: 2px solid #27ae60; border-radius: 8px; padding: 10px; background: #f1f9f4; }
+        .group-cop { border: 2px solid #1f77b4; border-radius: 8px; padding: 10px; background: #f1f6f9; }
+        .label-liq { color: #27ae60; }
+        .label-cop { color: #1f77b4; }
+
+        /* ORDEM DE DESCARGA */
+        .ordem-descarga { grid-column: 1 / -1; background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; border: 1px dashed #bbb; }
+        .radio-group { display: flex; justify-content: center; gap: 30px; margin-top: 10px; font-weight: bold; }
+
+        /* MAPAS E GRIDS */
+        .carroceria-wrapper { overflow-x: auto; background: #fafafa; padding: 15px; border-radius: 8px; border: 1px solid #eee; }
+        .grid-dinamico { display: grid; gap: 4px; margin-top: 10px; }
+        .celula { height: 40px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; border-radius: 4px; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.4); }
+        .bg-vazio { background-color: #e9ecef; border: 1px dashed #ced4da; color: #adb5bd; }
+        
+        /* CORES PRODUTOS */
+        .bg-P13L { background-color: #27ae60; } /* Liquigás */
+        .bg-P13C { background-color: #1f77b4; } /* Copagaz */
+        .bg-P45  { background-color: #d62728; }
+        .bg-P20  { background-color: #ff7f0e; color: #000; text-shadow: none; }
+        .bg-P8   { background-color: #bcbd22; color: #000; text-shadow: none; }
+        .bg-P5   { background-color: #9467bd; }
+
+        /* RESUMO E PESO */
+        #resumo { margin: 20px 0; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 18px; }
+        .alerta-ok { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alerta-erro { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        .grid-peso { display: grid; gap: 4px; height: 100px; align-items: end; }
+        .barra-peso { width: 100%; background: #495057; border-radius: 2px 2px 0 0; min-height: 2px; }
+
+        /* PRINT */
+        @media print {
+            .painel-frota, .controles, .btn-acao { display: none !important; }
+            .container { box-shadow: none; width: 100%; }
+        }
+    </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🚛 Planeador de Carga e Frota</h1>
+    <h1>🚛 Gestor de Carga Multimarcas</h1>
 
     <div class="painel-frota" id="painel-frota">
-        <h3>Identificação do Camião</h3>
-        <p>Digite as 3 primeiras letras da matrícula:</p>
-        <div class="linha-input">
-            <input type="text" id="placa_busca" class="input-placa" maxlength="3" placeholder="QRF">
-            <button class="btn-acao" onclick="buscarCaminhao()">Confirmar Matrícula</button>
-        </div>
-        
-        <div id="msg-frota" class="mensagem-erro"></div>
-
-        <div id="form-cadastro">
-            <h3 style="color: #1f77b4;">Cadastrar Novo Camião</h3>
-            <div class="grid-cadastro">
-                <div>
-                    <label>Matrícula</label>
-                    <input type="text" id="cad_placa" class="input-placa" maxlength="3" disabled>
-                </div>
-                <div>
-                    <label>Carga Máx. (P13)</label>
-                    <input type="number" id="cad_limite" placeholder="Ex: 477">
-                </div>
-                <div>
-                    <label>Comprimento</label>
-                    <input type="number" id="cad_cols" placeholder="22">
-                </div>
-                <div>
-                    <label>Largura</label>
-                    <input type="number" id="cad_rows" placeholder="6">
-                </div>
-            </div>
-            <button class="btn-acao btn-secundario" onclick="salvarCaminhao()">Salvar na Frota</button>
-            <button class="btn-acao btn-cancelar" onclick="fecharCadastro()">Cancelar</button>
-        </div>
+        <h3>Identificar Camião</h3>
+        <p>Introduza os 3 caracteres da matrícula (ex: QRF):</p>
+        <input type="text" id="placa_busca" class="input-placa" maxlength="3">
+        <button class="btn-acao" onclick="buscarCaminhao()">Entrar</button>
+        <div id="msg-frota" style="color:red; margin-top:10px;"></div>
     </div>
 
     <div id="area-calculo" style="display: none;">
-        <div class="header-ativo">
-            <h2 id="titulo-caminhao-ativo"></h2>
-            <button class="link-trocar" onclick="trocarCaminhao()">Trocar Camião</button>
+        <div style="display:flex; justify-content: space-between; align-items: center;">
+            <h2 id="titulo-ativo"></h2>
+            <button class="btn-acao btn-secundario" onclick="location.reload()">Sair/Trocar</button>
         </div>
 
         <div class="controles">
-            <div class="input-group border-green">
+            <div class="input-group group-liq">
                 <label class="label-liq">P13 Liquigás</label>
-                <input type="number" id="qtd_p13_liq" value="0" min="0">
+                <input type="number" id="qtd_p13_liq" value="0">
             </div>
-            <div class="input-group border-blue">
+            <div class="input-group group-cop">
                 <label class="label-cop">P13 Copagaz</label>
-                <input type="number" id="qtd_p13_cop" value="0" min="0">
+                <input type="number" id="qtd_p13_cop" value="0">
             </div>
-            <div class="input-group"><label>P45</label><input type="number" id="qtd_p45" value="0" min="0"></div>
-            <div class="input-group"><label>P20</label><input type="number" id="qtd_p20" value="0" min="0"></div>
-            <div class="input-group"><label>P8</label><input type="number" id="qtd_p8" value="0" min="0"></div>
-            <div class="input-group"><label>P5</label><input type="number" id="qtd_p5" value="0" min="0"></div>
+            <div class="input-group"><label>P45</label><input type="number" id="qtd_p45" value="0"></div>
+            <div class="input-group"><label>P20</label><input type="number" id="qtd_p20" value="0"></div>
+            <div class="input-group"><label>P8</label><input type="number" id="qtd_p8" value="0"></div>
+            <div class="input-group"><label>P5</label><input type="number" id="qtd_p5" value="0"></div>
             
             <div class="ordem-descarga">
-                <label>🚚 Qual marca descarrega <b>PRIMEIRO</b>? (Fica nas portas)</label>
+                <label>🏁 Qual marca sai <b>PRIMEIRO</b> do camião?</label>
                 <div class="radio-group">
-                    <label class="label-liq"><input type="radio" name="desc_primeiro" value="L" checked> Liquigás</label>
-                    <label class="label-cop"><input type="radio" name="desc_primeiro" value="C"> Copagaz</label>
+                    <label><input type="radio" name="prio" value="L" checked> Liquigás (Fundo)</label>
+                    <label><input type="radio" name="prio" value="C"> Copagaz (Fundo)</label>
                 </div>
             </div>
 
-            <div class="botoes-container">
-                <button class="btn-acao flex-2" onclick="gerarMapa()">Calcular e Gerar Mapas</button>
-                <button class="btn-acao btn-secundario flex-1" onclick="window.print()">🖨️ Imprimir / PDF</button>
+            <div style="grid-column: 1 / -1; display: flex; gap: 10px;">
+                <button class="btn-acao" style="flex:2" onclick="gerarMapa()">GERAR MAPA DE CARGA</button>
+                <button class="btn-acao btn-secundario" style="flex:1" onclick="window.print()">🖨️ Imprimir</button>
             </div>
         </div>
 
         <div id="resumo"></div>
 
-        <div class="secao" id="secao_superior" style="display: none;">
-            <h3>1. VISTA SUPERIOR (MAPA DE DOCA)</h3>
-            <div class="fluxo-indicador"><span>⬅️ CABINE</span><span>PORTAS ➡️</span></div>
+        <div class="secao">
+            <h3>🗺️ Vista Superior (Arrumação)</h3>
             <div class="carroceria-wrapper">
-                <div class="grid-dinamico" id="grid_mapa"></div>
-                <div class="grid-dinamico" id="grid_acumulado"></div>
-                <div class="conferencia-txt">SOMA ACUMULADA FÍSICA</div>
+                <div id="grid_mapa" class="grid-dinamico"></div>
             </div>
         </div>
 
-        <div class="secao" id="secao_esq" style="display: none;">
-            <h3>2. VISTA LATERAL ESQUERDA</h3>
-            <div class="carroceria-wrapper"><div class="grid-dinamico" id="grid_lat_esq"></div></div>
-        </div>
-
-        <div class="secao" id="secao_dir" style="display: none;">
-            <h3>3. VISTA LATERAL DIREITA</h3>
-            <div class="carroceria-wrapper"><div class="grid-dinamico" id="grid_lat_dir"></div></div>
-        </div>
-
-        <div class="secao" id="secao_tras" style="display: none;">
-            <h3>4. VISTA DA ENTRADA (PORTAS)</h3>
-            <div class="carroceria-wrapper"><div class="grid-centralizado" id="grid_traseira"></div></div>
-        </div>
-
-        <div class="secao" id="secao_peso" style="display: none;">
-            <h3>5. DISTRIBUIÇÃO DE PESO BRUTO (kg)</h3>
-            <div class="carroceria-wrapper"><div class="grid-peso" id="grid_peso"></div></div>
-        </div>
-
-        <div class="legenda">
-            <div class="item-legenda"><div class="cor-box bg-P13L"></div> Liquigás</div>
-            <div class="item-legenda"><div class="cor-box bg-P13C"></div> Copagaz</div>
-            <div class="item-legenda"><div class="cor-box bg-P45"></div> P45</div>
-            <div class="item-legenda"><div class="cor-box bg-P20"></div> P20</div>
-            <div class="item-legenda"><div class="cor-box bg-P8"></div> P8</div>
-            <div class="item-legenda"><div class="cor-box bg-P5"></div> P5</div>
+        <div class="secao">
+            <h3>⚖️ Distribuição de Peso por Coluna</h3>
+            <div class="carroceria-wrapper">
+                <div id="grid_peso" class="grid-peso"></div>
+            </div>
         </div>
     </div>
 </div>
